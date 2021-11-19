@@ -1,4 +1,4 @@
-# Extraction des données de "Book to Scrape"
+# Extraction des données de "Books to Scrape"
 
 Ceci est un projet réalisé dans le cadre de ma formation à Openclassrooms.
 
