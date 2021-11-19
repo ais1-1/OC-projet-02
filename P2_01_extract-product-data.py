@@ -3,18 +3,51 @@ from bs4 import BeautifulSoup
 import re
 import csv
 
+base_url = "http://books.toscrape.com"
+
+# function to create soup from a url
+def creer_soup(url):
+    reponse = requests.get(url)
+    html_page = reponse.content
+    soup = BeautifulSoup(html_page, 'html.parser')
+    return soup
+
+# url de la category fiction à scrapper
+category_page_url = "http://books.toscrape.com/catalogue/category/books/fiction_10/index.html"
+soup_category = creer_soup(category_page_url)
+
+product_divs = soup_category.find_all('div', class_='image_container')
+product_links = []
+for item in product_divs:
+    link = item.find('a')['href']
+    product_links.append(link)
+print(product_links)
+
+next_page = soup_category.find('li', class_='next')
+next_page_text = next_page.text
+print("**********next page text is ", next_page_text)
+
+if next_page_text == 'next':
+    # get the next page url end
+    next_page_url_end = next_page.find('a')['href']
+    # remove the word index from the url and substitute next_page_url_end
+    next_page_url = re.sub("index.html\Z", next_page_url_end, category_page_url)
+
+##################################################$
+# function to extract product details from a product page
+
+# function to add data to the created csv file
+
+
 #url de la produit 'the little prince' à scrapper
-main_url = "http://books.toscrape.com"
 data = []
 product_page_url = "http://books.toscrape.com/catalogue/the-little-prince_72/index.html"
-reponse = requests.get(product_page_url)
-html_page = reponse.content
 
 data.append(product_page_url)
 print("product page url is", product_page_url)
 
 #parse le page HTML en objet Beautifulsoup
-soup = BeautifulSoup(html_page, 'html.parser')
+soup = creer_soup(product_page_url)
 
 # extraire des ligne de la table
 table_rows = soup.find_all("table", class_="table")[0].find_all("tr")
@@ -85,7 +118,7 @@ print("review rating is", review_rating, "stars")
 image_tag = soup.find('img')
 #get the image url from the above result
 image_incomplete_url = image_tag['src']
-image_url = re.sub("\../..", main_url, image_incomplete_url)
+image_url = re.sub("\../..", base_url, image_incomplete_url)
 data.append(image_url)
 print("image url is", image_url)
 
