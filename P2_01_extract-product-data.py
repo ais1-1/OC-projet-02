@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import re
 
 #url de la produit 'the little prince' à scrapper
+main_url = "http://books.toscrape.com"
 product_page_url = "http://books.toscrape.com/catalogue/the-little-prince_72/index.html"
 reponse = requests.get(product_page_url)
 html_page = reponse.content
@@ -71,6 +72,7 @@ print("review rating is", review_rating, "stars")
 #get the image tag
 image_tag = soup.find('img')
 #get the image url from the above result
-image_url = image_tag['src']
+image_incomplete_url = image_tag['src']
+image_url = re.sub("\../..", main_url, image_incomplete_url)
 print("image url is", image_url)
 #image_url, dans tag img src
