@@ -107,18 +107,46 @@ def creer_fichier_csv(nom_de_fichier, en_tete, data):
         writer.writerow(en_tete)
         writer.writerow(data)
 
-## function to extract product links in a category page
-def scrapper_page_category(category_page_url):
-    # url de la category fiction à scrapper
-    soup_category = creer_soup(category_page_url)
-
-    product_divs = soup_category.find_all('div', class_='image_container')
-    product_links = []
+## function to extract product links from a page
+def get_product_links_from_page(soup_de_page):
+    product_divs = soup_de_page.find_all('div', class_='image_container')
+    product_links_from_a_page = []
     for item in product_divs:
         link = item.find('a')['href']
-        product_links.append(link)
-    print("Product links are ", product_links)
+        product_links_from_a_page.append(link)
+    return product_links_from_a_page
 
+## function to extract product links from a category page
+def scrapper_page_category(category_page_url):
+    # url d'une category à scrapper
+    soup_category = creer_soup(category_page_url)
+    #initialise product-links array
+    product_links = []
+    product_links = get_product_links_from_page(soup_category)
+
+    # to get next pages in case of pagination
+    next_page = soup_category.find('li', class_='next')
+
+    if next_page:
+        # to get total number of pages if there is a next page
+        page_number_tag = soup_category.find('li', class_="current")
+        page_number_text = page_number_tag.text
+        # regex search for a list of all the digits present in the string and returns the 2nd in the list
+        total_pages = int(re.findall(r'[0-9]+', page_number_text)[1])
+
+        for i in range(total_pages-1):
+            # get the next page url end
+            next_page_url_end = next_page.find('a')['href']
+            # remove the word index from the url and substitute next_page_url_end
+            next_page_url = re.sub("index.html\Z", next_page_url_end, category_page_url)
+            # create new soup for next page
+            soup_category_next_page = creer_soup(next_page_url)
+
+            product_links.append(get_product_links_from_page(soup_category_next_page))
+            # get next page
+            next_page = soup_category_next_page.find('li', class_='next')
+            print(i, total_pages, next_page_url)
+    #print("product links of the category ", product_links)
     return product_links
 
 def etl():
@@ -131,14 +159,13 @@ def etl():
     ## extract data from each product where the product_page_urls are provided from the above step
     ## create csv files for each category
 
-next_page = soup_category.find('li', class_='next')
-next_page_text = next_page.text
+## test
+category_page_url = "http://books.toscrape.com/catalogue/category/books/fiction_10/index.html"
+#category_page_url = "http://books.toscrape.com/catalogue/category/books/classics_6/index.html"
 
-if next_page_text == 'next':
-# get the next page url end
-next_page_url_end = next_page.find('a')['href']
-# remove the word index from the url and substitute next_page_url_end
-next_page_url = re.sub("index.html\Z", next_page_url_end, category_page_url)
+data = scrapper_page_category(category_page_url)
+en_tete = ["product_page_url", "universal_ product_code (upc)", "title", "price_including_tax", "price_excluding_tax", "number_available", "product_description", "category", "review_rating", "image_url"]
 
-print("Next page url is ", next_page_url)
+   
+creer_fichier_csv(test.csv, en_tete, data)
 
