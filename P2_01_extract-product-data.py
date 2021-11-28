@@ -142,7 +142,6 @@ def scrapper_page_category(category_page_url):
             product_links.extend(get_product_links_from_page(soup_category_next_page))
             # get next page
             next_page = soup_category_next_page.find('li', class_='next')
-            print(i, total_pages, next_page_url)
     #print("product links of the category ", product_links)
     
     return product_links
@@ -164,10 +163,47 @@ def create_csv_for_a_category(name_of_the_file, link_to_the_category_page):
 
 def etl():
     # url de la page à scrapper
-    #base_url = "http://books.toscrape.com"
-    base_url = "http://books.toscrape.com/catalogue/category/books/fiction_10/index.html"
+    base_url = "http://books.toscrape.com"
+    #base_url = "http://books.toscrape.com/catalogue/category/books/fiction_10/index.html"
     soup = creer_soup(base_url)
-    create_csv_for_a_category("fiction.csv", base_url)
+
+    side_bar = soup.find('ul', class_='nav')
+    list_of_category = side_bar.find_all('a')
+    # get list of category names in a list
+    category_name_list = []
+    for item in list_of_category:
+        text = item.text
+        # strip the text and replace next line tag
+        text = text.strip().replace('\n', '')
+        category_name_list.append(text)
+    # remove the title 'Books'
+    category_name_list.pop(0)
+
+    # create csv file names from category names
+    csv_file_name_for_category = []
+    for name in category_name_list:
+        csv_file_name_for_category.append(name + '.csv')
+
+    # get urls of every categories    
+    category_page_urls = []
+    for link in list_of_category:
+        category_url = link.get('href')
+        # add base_url to get complete url to each category page
+        category_complete_url = re.sub('catalogue', base_url + '/catalogue', category_url)
+        category_page_urls.append(category_complete_url)
+
+    dictionary_for_categories = dict(zip(csv_file_name_for_category, category_page_urls)) 
+    links = scrapper_page_category(dictionary_for_categories['Travel.csv'])
+    create_csv_for_a_category('Travel.csv', links)
+    """ for item in dictionary_for_categories:
+        scrapper_page_category(dictionary_for_categories[item])
+        create_csv_for_a_category(item, dictionary_for_categories[item])    """
+
+    """ print(category_page_urls)
+    print(category_name_list) """
+   # print(list_of_category)
+
+    #create_csv_for_a_category("fiction.csv", base_url)
     
     
     ## create csv files for each category
