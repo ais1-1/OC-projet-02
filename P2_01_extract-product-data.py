@@ -98,11 +98,8 @@ def scrapper_un_page_produit(product_page_url):
 
 ## function to add data to the created csv file
 def creer_fichier_csv(nom_de_fichier, en_tete, data):
-    # créer une liste des en-têtes
-    en_tete = ["product_page_url", "universal_ product_code (upc)", "title", "price_including_tax", "price_excluding_tax", "number_available", "product_description", "category", "review_rating", "image_url"]
-
     # créer fichier product_data.csv and write data in it
-    with open('nom_de_fichier.csv', 'w') as fichier_csv:
+    with open(nom_de_fichier, 'w') as fichier_csv:
         writer = csv.writer(fichier_csv, delimiter=',')
         writer.writerow(en_tete)
         writer.writerow(data)
@@ -151,11 +148,13 @@ def scrapper_page_category(category_page_url):
 
 def etl():
     # url de la page à scrapper
-    base_url = "http://books.toscrape.com"
+    #base_url = "http://books.toscrape.com"
     soup = creer_soup(base_url)
 
-    ## get links of each category
-    ## extract product links from each category and if there is next page from there too
+    # créer une liste des en-têtes
+    en_tete = ["product_page_url", "universal_ product_code (upc)", "title", "price_including_tax", "price_excluding_tax", "number_available", "product_description", "category", "review_rating", "image_url"]
+
+
     ## extract data from each product where the product_page_urls are provided from the above step
     ## create csv files for each category
 
@@ -164,8 +163,7 @@ category_page_url = "http://books.toscrape.com/catalogue/category/books/fiction_
 #category_page_url = "http://books.toscrape.com/catalogue/category/books/classics_6/index.html"
 
 data = scrapper_page_category(category_page_url)
-en_tete = ["product_page_url", "universal_ product_code (upc)", "title", "price_including_tax", "price_excluding_tax", "number_available", "product_description", "category", "review_rating", "image_url"]
 
    
-creer_fichier_csv(test.csv, en_tete, data)
+creer_fichier_csv("test.csv", en_tete, data)
 
