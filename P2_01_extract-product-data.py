@@ -16,7 +16,7 @@ def creer_soup(url):
 def scrapper_un_page_produit(product_page_url):
     data = []
     data.append(product_page_url)
-    print("product page url is", product_page_url)
+    #print("product page url is", product_page_url)
 
     #parse le page HTML en objet Beautifulsoup
     soup = creer_soup(product_page_url)
@@ -30,19 +30,19 @@ def scrapper_un_page_produit(product_page_url):
     # acceder le universal_product_code(upc)
     upc = second_column[0]
     data.append(upc)
-    print("upc is ", upc)
+    #print("upc is ", upc)
 
     title = soup.find("h1").string
     data.append(title)
-    print("title is ", title)
+    #print("title is ", title)
 
     price_including_tax = second_column[3]
     data.append(price_including_tax)
-    print("price including tax is ", price_including_tax)
+    #print("price including tax is ", price_including_tax)
 
     price_excluding_tax = second_column[2]
     data.append(price_excluding_tax)
-    print("price excluding tax is ", price_excluding_tax)
+    #print("price excluding tax is ", price_excluding_tax)
 
     # function pour recuperer l'entier depuis une phrase (remplacé par regex re.search)
     '''def get_int_from_string(availability):
@@ -61,7 +61,7 @@ def scrapper_un_page_produit(product_page_url):
     et int() transforment le résultat entier en nombre entier.'''
     number_available = int(re.search(r'\d+', availability_detail).group())
     data.append(number_available)
-    print("number available is ", number_available)
+    #print("number available is ", number_available)
 
     # get all meta tags
     all_metas = soup.find_all('meta')
@@ -70,38 +70,37 @@ def scrapper_un_page_produit(product_page_url):
             #if the attribute 'name' is description assign the attribute 'content' to product description
             product_description = meta.attrs['content']
     data.append(product_description)
-    print("description is ", product_description)
+    #print("description is ", product_description)
 
     #get the ul part with class breadcrumb
     ul_elements = soup.find('ul', class_='breadcrumb')
     # get Category, which is the third li inside ul
     category = ul_elements.find_all('li')[2].text
     data.append(category)
-    print("category is ", category)
+    #print("category is ", category)
 
     #get the part with star rating
     star_ratings = soup.find('p', class_='star-rating')
     #get the second class name which indicates the number of stars
     review_rating = star_ratings['class'][1]
     data.append(review_rating)
-    print("review rating is", review_rating, "stars")
+    #print("review rating is", review_rating, "stars")
 
     #get the image tag
     image_tag = soup.find('img')
     #get the image url from the above result
     image_incomplete_url = image_tag['src']
-    image_url = re.sub("\../..", base_url, image_incomplete_url)
+    image_url = re.sub("\../..", product_page_url, image_incomplete_url)
     data.append(image_url)
-    print("image url is", image_url)
+    #print("image url is", image_url)
 
     return data
 
 ## function to add data to the created csv file
-def creer_fichier_csv(nom_de_fichier, en_tete, data):
-    # créer fichier product_data.csv and write data in it
-    with open(nom_de_fichier, 'w') as fichier_csv:
+def append_row_fichier_csv(nom_de_fichier, data):
+    # append data in csv file
+    with open(nom_de_fichier, 'a+') as fichier_csv:
         writer = csv.writer(fichier_csv, delimiter=',')
-        writer.writerow(en_tete)
         writer.writerow(data)
 
 ## function to extract product links from a page
@@ -110,7 +109,8 @@ def get_product_links_from_page(soup_de_page):
     product_links_from_a_page = []
     for item in product_divs:
         link = item.find('a')['href']
-        product_links_from_a_page.append(link)
+        full_link = re.sub("\A../../../", "http://books.toscrape.com/catalogue/", link)
+        product_links_from_a_page.append(full_link)
     return product_links_from_a_page
 
 ## function to extract product links from a category page
@@ -139,31 +139,47 @@ def scrapper_page_category(category_page_url):
             # create new soup for next page
             soup_category_next_page = creer_soup(next_page_url)
 
-            product_links.append(get_product_links_from_page(soup_category_next_page))
+            product_links.extend(get_product_links_from_page(soup_category_next_page))
             # get next page
             next_page = soup_category_next_page.find('li', class_='next')
             print(i, total_pages, next_page_url)
     #print("product links of the category ", product_links)
+    
     return product_links
 
 def etl():
     # url de la page à scrapper
     #base_url = "http://books.toscrape.com"
+    base_url = "http://books.toscrape.com/catalogue/category/books/fiction_10/index.html"
     soup = creer_soup(base_url)
 
     # créer une liste des en-têtes
     en_tete = ["product_page_url", "universal_ product_code (upc)", "title", "price_including_tax", "price_excluding_tax", "number_available", "product_description", "category", "review_rating", "image_url"]
 
+    # créer fichier csv and write title row (en_tete) in it
+    with open("product_data_in_a_category.csv", 'w') as fichier_csv:
+        writer = csv.writer(fichier_csv, delimiter=',')
+        writer.writerow(en_tete)
 
-    ## extract data from each product where the product_page_urls are provided from the above step
+    # append data of each product in a category
+    for link in scrapper_page_category(base_url):
+        category_product_data = []
+        category_product_data = scrapper_un_page_produit(link)
+        append_row_fichier_csv('product_data_in_a_category.csv', category_product_data)
+    
     ## create csv files for each category
 
 ## test
-category_page_url = "http://books.toscrape.com/catalogue/category/books/fiction_10/index.html"
+etl()
+""" category_page_url = "http://books.toscrape.com/catalogue/category/books/fiction_10/index.html"
 #category_page_url = "http://books.toscrape.com/catalogue/category/books/classics_6/index.html"
 
 data = scrapper_page_category(category_page_url)
 
    
 creer_fichier_csv("test.csv", en_tete, data)
-
+ """
+""" link = '../../../bright-lines_11/index.html'
+good_link = re.sub("\A../../../", "http://books.toscrape.com/catalogue/", link)
+print(link, file=open("test.txt", "a"))
+print(good_link, file=open("test.txt", "a") ) """
