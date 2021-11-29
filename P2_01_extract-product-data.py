@@ -156,7 +156,7 @@ def create_csv_for_a_category(name_of_the_file, link_to_the_category_page):
         writer.writerow(en_tete)
 
     # append data of each product in a category
-    for link in scrapper_page_category(link_to_the_category_page):
+    for link in link_to_the_category_page:
         category_product_data = []
         category_product_data = scrapper_un_page_produit(link)
         append_row_fichier_csv(name_of_the_file, category_product_data)
@@ -191,6 +191,7 @@ def etl():
         # add base_url to get complete url to each category page
         category_complete_url = re.sub('catalogue', base_url + '/catalogue', category_url)
         category_page_urls.append(category_complete_url)
+    category_page_urls.pop(0)
 
     dictionary_for_categories = dict(zip(csv_file_name_for_category, category_page_urls)) 
     links = scrapper_page_category(dictionary_for_categories['Travel.csv'])
