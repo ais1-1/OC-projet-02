@@ -1,3 +1,6 @@
+## SPDX-FileCopyrightText: 2021 Aiswarya Kaitheri Kandoth
+## SPDX-License-Identifier: GPL-3.0-or-later
+
 import requests
 from bs4 import BeautifulSoup
 import re
