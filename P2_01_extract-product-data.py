@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import re
 import csv
 
-# function to create soup from a url
+## function to create soup from a url
 def creer_soup(url):
     reponse = requests.get(url)
     html_page = reponse.content
@@ -44,7 +44,7 @@ def scrapper_un_page_produit(product_page_url):
     data.append(price_excluding_tax)
     #print("price excluding tax is ", price_excluding_tax)
 
-    # function pour recuperer l'entier depuis une phrase (remplacé par regex re.search)
+    ## function pour recuperer l'entier depuis une phrase (remplacé par regex re.search)
     '''def get_int_from_string(availability):
         list_of_words = availability.split("(")[1].split()
         for i in list_of_words:
@@ -143,15 +143,18 @@ def scrapper_page_category(category_page_url):
             # get next page
             next_page = soup_category_next_page.find('li', class_='next')
     #print("product links of the category ", product_links)
-    
+
     return product_links
 
 def create_csv_for_a_category(name_of_the_file, link_to_the_category_page):
     # créer une liste des en-têtes
     en_tete = ["product_page_url", "universal_ product_code (upc)", "title", "price_including_tax", "price_excluding_tax", "number_available", "product_description", "category", "review_rating", "image_url"]
 
+    # replace white spaces with underscore
+    name_of_the_file_without_space =re.sub(" ", "_", name_of_the_file)
+
     # créer fichier csv , write category name and write title row (en_tete) in it
-    with open(name_of_the_file, 'w') as fichier_csv:
+    with open(name_of_the_file_without_space, 'w') as fichier_csv:
         writer = csv.writer(fichier_csv, delimiter=',')
         writer.writerow(en_tete)
 
@@ -159,12 +162,11 @@ def create_csv_for_a_category(name_of_the_file, link_to_the_category_page):
     for link in link_to_the_category_page:
         category_product_data = []
         category_product_data = scrapper_un_page_produit(link)
-        append_row_fichier_csv(name_of_the_file, category_product_data)
+        append_row_fichier_csv(name_of_the_file_without_space, category_product_data)
 
 def etl():
     # url de la page à scrapper
     base_url = "http://books.toscrape.com"
-    #base_url = "http://books.toscrape.com/catalogue/category/books/fiction_10/index.html"
     soup = creer_soup(base_url)
 
     side_bar = soup.find('ul', class_='nav')
@@ -184,7 +186,7 @@ def etl():
     for name in category_name_list:
         csv_file_name_for_category.append(name + '.csv')
 
-    # get urls of every categories    
+    # get urls of every categories
     category_page_urls = []
     for link in list_of_category:
         category_url = link.get('href')
@@ -193,33 +195,13 @@ def etl():
         category_page_urls.append(category_complete_url)
     category_page_urls.pop(0)
 
-    dictionary_for_categories = dict(zip(csv_file_name_for_category, category_page_urls)) 
-    links = scrapper_page_category(dictionary_for_categories['Travel.csv'])
-    create_csv_for_a_category('Travel.csv', links)
-    """ for item in dictionary_for_categories:
-        scrapper_page_category(dictionary_for_categories[item])
-        create_csv_for_a_category(item, dictionary_for_categories[item])    """
+    # create a dictionary with csv_file_name_for_category as key and corresponding url as value
+    dictionary_for_categories = dict(zip(csv_file_name_for_category, category_page_urls))
 
-    """ print(category_page_urls)
-    print(category_name_list) """
-   # print(list_of_category)
+    # extract products data for each category in the website
+    for item in dictionary_for_categories:
+        links_from_categories = scrapper_page_category(dictionary_for_categories[item])
+        create_csv_for_a_category(item, links_from_categories)
 
-    #create_csv_for_a_category("fiction.csv", base_url)
-    
-    
-    ## create csv files for each category
 
-## test
 etl()
-""" category_page_url = "http://books.toscrape.com/catalogue/category/books/fiction_10/index.html"
-#category_page_url = "http://books.toscrape.com/catalogue/category/books/classics_6/index.html"
-
-data = scrapper_page_category(category_page_url)
-
-   
-creer_fichier_csv("test.csv", en_tete, data)
- """
-""" link = '../../../bright-lines_11/index.html'
-good_link = re.sub("\A../../../", "http://books.toscrape.com/catalogue/", link)
-print(link, file=open("test.txt", "a"))
-print(good_link, file=open("test.txt", "a") ) """
