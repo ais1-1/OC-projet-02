@@ -133,9 +133,9 @@ def scrapper_un_page_produit(product_page_url, base_url):
     return data
 
 ## function to add data to the created csv file
-def append_row_fichier_csv(nom_de_fichier, data):
+def append_row_fichier_csv(csv_file_path, data):
     # append data in csv file
-    with open(nom_de_fichier, 'a+') as fichier_csv:
+    with open(csv_file_path, 'a+') as fichier_csv:
         writer = csv.writer(fichier_csv, delimiter=',')
         writer.writerow(data)
 
@@ -188,16 +188,25 @@ def create_csv_for_a_category(name_of_the_file, link_to_the_category_page, base_
     # replace white spaces with underscore
     name_of_the_file_without_space =re.sub(" ", "_", name_of_the_file)
 
-    # create csv file , write category name and write headers (en_tete) in it
-    with open(name_of_the_file_without_space, 'w') as fichier_csv:
-        writer = csv.writer(fichier_csv, delimiter=',')
-        writer.writerow(en_tete)
+    # create a folder to store csv files
+    path_to_csv_folder = os.path.join("csv_files")
+    if not os.path.exists(path_to_csv_folder):
+        os.mkdir(path_to_csv_folder)
+
+    # path to csv file
+    csv_file_path = os.path.join(path_to_csv_folder, name_of_the_file_without_space)
+    # if the csv file does not exist create one
+    if not os.path.exists(csv_file_path):
+        # create csv file , write category name and write headers (en_tete) in it
+        with open(csv_file_path, 'w') as fichier_csv:
+            writer = csv.writer(fichier_csv, delimiter=',')
+            writer.writerow(en_tete)
 
     # append data of each product in a category
     for link in link_to_the_category_page:
         category_product_data = []
         category_product_data = scrapper_un_page_produit(link, base_url)
-        append_row_fichier_csv(name_of_the_file_without_space, category_product_data)
+        append_row_fichier_csv(csv_file_path, category_product_data)
 
 def etl():
     # url of the page to scrape
