@@ -15,7 +15,7 @@ import csv
 import shutil
 
 ## function to create soup from a url
-def creer_soup(url):
+def create_soup(url):
     reponse = requests.get(url)
     html_page = reponse.content
 
@@ -24,12 +24,12 @@ def creer_soup(url):
     return soup
 
 ## function to extract product details from a product page
-def scrapper_un_page_produit(product_page_url, base_url):
+def scrape_product_page(product_page_url, base_url):
     data = []
     data.append(product_page_url)
 
     # create soup of the product page
-    soup = creer_soup(product_page_url)
+    soup = create_soup(product_page_url)
 
     # extract table rows
     table_rows = soup.find_all("table", class_="table")[0].find_all("tr")
@@ -133,15 +133,15 @@ def scrapper_un_page_produit(product_page_url, base_url):
     return data
 
 ## function to add data to the created csv file
-def append_row_fichier_csv(csv_file_path, data):
+def append_row_in_csv_file(csv_file_path, data):
     # append data in csv file
-    with open(csv_file_path, 'a+') as fichier_csv:
-        writer = csv.writer(fichier_csv, delimiter=',')
+    with open(csv_file_path, 'a+') as csv_file:
+        writer = csv.writer(csv_file, delimiter=',')
         writer.writerow(data)
 
 ## function to extract product links from a page
-def get_product_links_from_page(soup_de_page):
-    product_divs = soup_de_page.find_all('div', class_='image_container')
+def get_product_links_from_page(page_soup):
+    product_divs = page_soup.find_all('div', class_='image_container')
     product_links_from_a_page = []
     for item in product_divs:
         link = item.find('a')['href']
@@ -150,9 +150,9 @@ def get_product_links_from_page(soup_de_page):
     return product_links_from_a_page
 
 ## function to extract product links from a category page
-def scrapper_page_category(category_page_url):
+def scrape_page_category(category_page_url):
     # create soup for a url of a category to extract
-    soup_category = creer_soup(category_page_url)
+    soup_category = create_soup(category_page_url)
     # initialise product-links array
     product_links = []
     product_links = get_product_links_from_page(soup_category)
@@ -173,7 +173,7 @@ def scrapper_page_category(category_page_url):
             # remove the word index from the url and substitute next_page_url_end
             next_page_url = re.sub("index.html\Z", next_page_url_end, category_page_url)
             # create new soup for next page
-            soup_category_next_page = creer_soup(next_page_url)
+            soup_category_next_page = create_soup(next_page_url)
 
             product_links.extend(get_product_links_from_page(soup_category_next_page))
             # get next page
@@ -182,8 +182,8 @@ def scrapper_page_category(category_page_url):
     return product_links
 
 def create_csv_for_a_category(name_of_the_file, link_to_the_category_page, base_url):
-    # create a list of headers (en-têtes)
-    en_tete = ["product_page_url", "universal_ product_code (upc)", "title", "price_including_tax", "price_excluding_tax", "number_available", "product_description", "category", "review_rating", "image_url"]
+    # create a list of headers
+    header = ["product_page_url", "universal_ product_code (upc)", "title", "price_including_tax", "price_excluding_tax", "number_available", "product_description", "category", "review_rating", "image_url"]
 
     # replace white spaces with underscore
     name_of_the_file_without_space =re.sub(" ", "_", name_of_the_file)
@@ -197,21 +197,21 @@ def create_csv_for_a_category(name_of_the_file, link_to_the_category_page, base_
     csv_file_path = os.path.join(path_to_csv_folder, name_of_the_file_without_space)
     # if the csv file does not exist create one
     if not os.path.exists(csv_file_path):
-        # create csv file , write category name and write headers (en_tete) in it
-        with open(csv_file_path, 'w') as fichier_csv:
-            writer = csv.writer(fichier_csv, delimiter=',')
-            writer.writerow(en_tete)
+        # create csv file , write category name and write headers in it
+        with open(csv_file_path, 'w') as csv_file:
+            writer = csv.writer(csv_file, delimiter=',')
+            writer.writerow(header)
 
     # append data of each product in a category
     for link in link_to_the_category_page:
         category_product_data = []
-        category_product_data = scrapper_un_page_produit(link, base_url)
-        append_row_fichier_csv(csv_file_path, category_product_data)
+        category_product_data = scrape_product_page(link, base_url)
+        append_row_in_csv_file(csv_file_path, category_product_data)
 
 def etl():
     # url of the page to scrape
     base_url = "http://books.toscrape.com"
-    soup = creer_soup(base_url)
+    soup = create_soup(base_url)
 
     side_bar = soup.find('ul', class_='nav')
     list_of_category = side_bar.find_all('a')
@@ -244,7 +244,7 @@ def etl():
 
     # extract products data for each category in the website
     for item in dictionary_for_categories:
-        links_from_categories = scrapper_page_category(dictionary_for_categories[item])
+        links_from_categories = scrape_page_category(dictionary_for_categories[item])
         create_csv_for_a_category(item, links_from_categories, base_url)
 
 etl()
