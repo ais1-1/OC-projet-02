@@ -1,6 +1,6 @@
-# Extraction des données de "Books to Scrape"
+# Extracting data from "Books to Scrape"
 
-Ceci est un projet réalisé dans le cadre de ma formation à Openclassrooms.
+This is a project done as part of my degree program at Openclassrooms.
 
-Il s'agit d'extraire des données du site web « [Books to Scrape](http://books.toscrape.com/) » et de les stocker dans un fichier csv.
+It involves extracting data from the "[Books to Scrape](http://books.toscrape.com/)" website and storing it in a csv file. Also download and save the image file for each proudct page.
 
