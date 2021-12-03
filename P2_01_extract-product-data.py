@@ -1,7 +1,7 @@
 ##
 # SPDX-FileCopyrightText: 2021 Aiswarya Kaitheri Kandoth
 #
-#Authors :
+# Authors :
 # Aiswarya Kaitheri Kandoth
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -25,6 +25,7 @@ def create_soup(url):
 
 ## function to extract product details from a product page
 def scrape_product_page(product_page_url, base_url):
+    # array to store the extracted data
     data = []
     data.append(product_page_url)
 
@@ -74,7 +75,7 @@ def scrape_product_page(product_page_url, base_url):
     all_metas = soup.find_all('meta')
     for meta in all_metas:
         if 'name' in meta.attrs and meta.attrs['name'] == 'description':
-            #if the attribute 'name' is description assign the attribute 'content' to product description
+            #if the attribute 'name' is 'description' assign the attribute 'content' to product description
             product_description = meta.attrs['content']
     data.append(product_description)
 
