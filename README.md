@@ -46,6 +46,14 @@ In the project directory, open a terminal and enter the following command:
 
     source <name of the virtual environment>/bin/activate
 
+## Install dependencies
+
+Again, inside the project directory, in your terminal, enter the following command:
+
+    pip install -r requirements.txt
+
+This will install all the required modules to run the python script.
+
 ## Execute the python script
 
 In your terminal inside the project directory:
