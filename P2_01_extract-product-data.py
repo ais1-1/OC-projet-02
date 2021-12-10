@@ -25,7 +25,7 @@ def create_soup(url):
 
 ## function to extract product details from a product page
 def scrape_product_page(product_page_url, base_url):
-    # array to store the extracted data
+    # list to store the extracted data
     data = []
     data.append(product_page_url)
 
@@ -35,7 +35,7 @@ def scrape_product_page(product_page_url, base_url):
     # extract table rows
     table_rows = soup.find_all("table", class_="table")[0].find_all("tr")
     second_column = []
-    # make an array with contents from 2nd column
+    # make an list with contents from 2nd column
     for row in table_rows:
         second_column.append(row.find_all('td')[0].text)
     # access the universal_product_code(upc)
@@ -154,7 +154,7 @@ def get_product_links_from_page(page_soup):
 def scrape_page_category(category_page_url):
     # create soup for a url of a category to extract
     soup_category = create_soup(category_page_url)
-    # initialise product-links array
+    # initialise product-links list
     product_links = []
     product_links = get_product_links_from_page(soup_category)
 
