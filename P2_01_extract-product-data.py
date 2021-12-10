@@ -63,11 +63,11 @@ def scrape_product_page(product_page_url, base_url):
     '''
 
     availability_detail = second_column[5]
-    ''' Utilisation de regex pour séparer le numéro de la chaîne de caractères,
-    le "r" au début permet de s'assurer que la chaîne est traitée comme une "chaîne brute",
-    \d renvoie une correspondance lorsque la chaîne contient des chiffres (de 0 à 9),'+' pour une ou plusieurs occurrences,
-    group() renvoie la partie de la chaîne de caractères pour laquelle il y a une correspondance,
-    et int() transforment le résultat entier en nombre entier.'''
+    ''' Use of regex to separate the number from the string,
+    the 'r' at the beginning ensures that the string is treated as a 'raw string',
+    \d returns a match when the string contains numbers (from 0 to 9), '+' for one or more occurrences,
+    group() returns a match when the string contains numbers (from 0 to 9), '+' for one or more occurrences,
+    and int() transforms the integer result into an integer.'''
     number_available = int(re.search(r'\d+', availability_detail).group())
     data.append(number_available)
 
